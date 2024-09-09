@@ -1,4 +1,4 @@
-package response
+package app
 
 import (
 	"net/http"
@@ -6,8 +6,6 @@ import (
 	"github.com/gogf/gf/v2/errors/gcode"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/net/ghttp"
-
-	"github.com/LanceAdd/gf-extra/app"
 )
 
 type RespBody struct {
@@ -54,6 +52,6 @@ func RespWriter(r *ghttp.Request) {
 		Code:     code.Code(),
 		Message:  msg,
 		Data:     res,
-		Platform: app.GetAppName(),
+		Platform: GetAppName(),
 	})
 }
