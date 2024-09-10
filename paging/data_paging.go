@@ -54,6 +54,7 @@ func (paging *DataPageOpsImpl[T]) reCalculate() {
 
 func (paging *DataPageOpsImpl[T]) Fetch() *PageEntityRes[T] {
 	if paging.totalItems == 0 {
+		data := make([]T, 0)
 		return &PageEntityRes[T]{
 			CurrentPage:  0,
 			PrevPage:     0,
@@ -61,7 +62,7 @@ func (paging *DataPageOpsImpl[T]) Fetch() *PageEntityRes[T] {
 			TotalPages:   0,
 			PerPageItems: paging.perPageItems,
 			TotalItems:   0,
-			PageData:     new([]T),
+			PageData:     &data,
 		}
 	}
 	paging.reCalculate()
