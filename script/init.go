@@ -34,10 +34,10 @@ func LoadLuaScripts(m map[string]string) {
 
 	builder := strings.Builder{}
 	scriptsSha1Map.Range(func(key, value any) bool {
-		builder.WriteString(fmt.Sprintf("Success Load lua script: %s => %s\n", key, value))
+		builder.WriteString(fmt.Sprintf("[SUCCESS] Load lua script: %s => %s\n", key, value))
 		return true
 	})
-	g.Log().Infof(ctx, "Success Load [%d] lua script\n%s", total, builder.String())
+	g.Log().Infof(ctx, "[SUCCESS] Load [%d] lua script\n%s", total, builder.String())
 }
 
 func GetLuaSha1(key string) string {
