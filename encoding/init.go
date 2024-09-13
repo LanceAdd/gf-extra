@@ -15,22 +15,24 @@ var (
 	rsaCfg  *RsaConfig
 )
 
-func InitEncodingKeys() {
+func InitJwtEncodingKeys() {
 	jwtCfg = &JwtConfig{}
 	jwtKeys = &JwtKeys{}
 	ctx := gctx.GetInitCtx()
 	doLoadJwtConfig(ctx, jwtCfg)
 	doLoadJwt(jwtCfg, jwtKeys)
 	g.Log().Info(ctx, "[SUCCESS] Load jwt config")
+}
 
+func InitRsaEncodingKeys() {
 	rsaKeys = &RsaKeys{}
 	rsaCfg = &RsaConfig{}
+	ctx := gctx.GetInitCtx()
 	doLoadRsaConfig(ctx, rsaCfg)
 	doLoadRsaKeys(rsaCfg, rsaKeys)
 	g.Log().Info(ctx, "[SUCCESS] Load rsa config")
 }
-
-func ReInitEncodingKeys() {
+func ReInitJwtEncodingKeys() {
 	jwtCfg.Lock()
 	defer jwtCfg.Unlock()
 	jwtKeys.Lock()
@@ -46,6 +48,24 @@ func ReInitEncodingKeys() {
 		g.Log().Infof(ctx, "[Success] ReLoad Security Config")
 	}
 
+	rsaCfg.Lock()
+	defer rsaCfg.Unlock()
+	rsaKeys.Lock()
+	defer rsaKeys.Unlock()
+	newRsaCfg := &RsaConfig{}
+	doLoadRsaConfig(ctx, newRsaCfg)
+	rsaKeys = &RsaKeys{}
+	doLoadRsaKeys(rsaCfg, rsaKeys)
+	rsaCfgEqual := doRsaCfgCompare(newRsaCfg, rsaCfg)
+	if !rsaCfgEqual {
+		rsaCfg = newRsaCfg
+		newRsaKeys := &RsaKeys{}
+		doLoadRsaKeys(rsaCfg, newRsaKeys)
+	}
+}
+
+func ReInitRsaEncodingKeys() {
+	ctx := gctx.GetInitCtx()
 	rsaCfg.Lock()
 	defer rsaCfg.Unlock()
 	rsaKeys.Lock()
