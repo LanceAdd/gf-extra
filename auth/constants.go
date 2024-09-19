@@ -19,3 +19,5 @@ const (
 )
 
 const CtxUserId = "CtxUserId"
+
+const defaultPlatform = "Default"

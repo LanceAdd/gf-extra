@@ -1,5 +1,7 @@
 package paging
 
+import "github.com/gogf/gf/v2/util/gconv"
+
 type SimplePageOpsImpl[T any] struct {
 	currentPage  int
 	perPageItems int
@@ -34,6 +36,14 @@ func (paging *SimplePageOpsImpl[T]) Limit() int {
 func (paging *SimplePageOpsImpl[T]) PageData(totalItems int, pageData *[]T) *SimplePageOpsImpl[T] {
 	paging.totalItems = totalItems
 	paging.pageData = pageData
+	return paging
+}
+
+func (paging *SimplePageOpsImpl[T]) PageModels(totalItems int, models *[]any) *SimplePageOpsImpl[T] {
+	paging.totalItems = totalItems
+	data := new([]T)
+	gconv.Scan(models, data)
+	paging.pageData = data
 	return paging
 }
 
