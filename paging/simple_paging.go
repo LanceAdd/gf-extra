@@ -39,7 +39,7 @@ func (paging *SimplePageOpsImpl[T]) PageData(totalItems int, pageData *[]T) *Sim
 	return paging
 }
 
-func (paging *SimplePageOpsImpl[T]) PageModels(totalItems int, models *[]any) *SimplePageOpsImpl[T] {
+func (paging *SimplePageOpsImpl[T]) PageModels(totalItems int, models *any) *SimplePageOpsImpl[T] {
 	paging.totalItems = totalItems
 	data := new([]T)
 	gconv.Scan(models, data)
