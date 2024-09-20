@@ -16,7 +16,7 @@ type RuleConfig struct {
 	sync.RWMutex
 	RedisName string `json:"redisName" dc:"redis名称"`
 	Issuer    string `json:"issuer" v:"required" dc:"Token签发者"`
-	CacheMode string `json:"cacheMode" v:"required|in:redis,memory,none" d:"no" dc:"token是否使用缓存以及缓存的方式"`
+	CacheMode string `json:"cacheMode" v:"required|in:redis,memory" d:"no" dc:"token是否使用缓存以及缓存的方式"`
 	ExpireDt  int64  `json:"expireDt" v:"required-unless:cacheMode" dc:"缓存有效时间"`
 	Rule      []Rule `json:"rule" dc:"权限路由集合"`
 }

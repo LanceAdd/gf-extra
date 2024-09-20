@@ -46,11 +46,11 @@ func doPermissionRequired(r *ghttp.Request) error {
 	value := r.GetCtxVar(CtxUserId)
 	var userId int64
 	if value.IsNil() {
-		currentUser := doVerifyToken(r.GetCtx(), token, cacheMode)
-		if currentUser == nil {
+		currentUserId := doVerifyToken(r.GetCtx(), token, cacheMode)
+		if currentUserId == 0 {
 			return gerror.NewCode(IllegalTokensError)
 		}
-		r.SetCtxVar(CtxUserId, currentUser.UserId)
+		r.SetCtxVar(CtxUserId, currentUserId)
 	} else {
 		userId = value.Int64()
 	}
@@ -80,8 +80,6 @@ func doVerifyAuth(ctx context.Context, userId int64, permissions []RulePermissio
 		return doAuthFromRedis(ctx, userId, permissions)
 	case CacheModeMemory:
 		return doAuthFromMemory(ctx, userId, permissions)
-	case CacheModeNone:
-		return doAuthFromDb(ctx, userId, permissions)
 	}
 	return false
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/google/uuid"
 
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/os/gcache"
@@ -11,10 +12,6 @@ import (
 )
 
 func Login(ctx context.Context, userId int64) (string, error) {
-	if signToken == nil {
-		g.Log().Error(ctx, "func signToken do not init")
-		return "", errors.New("func signToken do not init")
-	}
 	if gutil.IsEmpty(userId) {
 		return "", errors.New("userId empty")
 	}
@@ -24,8 +21,6 @@ func Login(ctx context.Context, userId int64) (string, error) {
 		return GenerateTokenToRedis(ctx, userId)
 	case CacheModeMemory:
 		return GenerateTokenToMemory(ctx, userId)
-	case CacheModeNone:
-		return GenerateToken(ctx, userId)
 	default:
 		return "", errors.New("invalid cache mode")
 	}
@@ -44,13 +39,9 @@ func Logout(ctx context.Context, userId int64) (string, error) {
 }
 
 func GenerateTokenToRedis(ctx context.Context, userId int64) (string, error) {
-	content := NewSimpleTokenContent(userId)
-	token, err := signToken(ctx, content)
-	if err != nil {
-		return "", err
-	}
+	token := uuid.New().String()
 	cacheKey := CachePrefixUserToken + ":" + token
-	err = redisOps().SetEX(ctx, cacheKey, content, GetCacheExpireDt())
+	err := redisOps().SetEX(ctx, cacheKey, userId, GetCacheExpireDt())
 	if err != nil {
 		return "", err
 	}
@@ -67,13 +58,9 @@ func GenerateTokenToRedis(ctx context.Context, userId int64) (string, error) {
 }
 
 func GenerateTokenToMemory(ctx context.Context, userId int64) (string, error) {
-	content := NewSimpleTokenContent(userId)
-	token, err := signToken(ctx, content)
-	if err != nil {
-		return "", err
-	}
+	token := uuid.New().String()
 	cacheKey := CachePrefixUserToken + ":" + token
-	err = gcache.Set(ctx, cacheKey, content, GetCacheExpireDtDuration())
+	err := gcache.Set(ctx, cacheKey, userId, GetCacheExpireDtDuration())
 	if err != nil {
 		return "", err
 	}
@@ -97,13 +84,6 @@ func GenerateTokenToMemory(ctx context.Context, userId int64) (string, error) {
 	}
 	return token, nil
 }
-
-func GenerateToken(ctx context.Context, userId int64) (string, error) {
-	content := NewSimpleTokenContent(userId)
-	token, err := signToken(ctx, content)
-	return token, err
-}
-
 func ClearUserTokenInRedis(ctx context.Context, userId int64) error {
 	arrayCacheKey := fmt.Sprintf("%s:%d", CachePrefixUserTokenArray, userId)
 

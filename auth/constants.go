@@ -9,7 +9,6 @@ const (
 const (
 	CacheModeRedis  = "REDIS"
 	CacheModeMemory = "MEMORY"
-	CacheModeNone   = "NONE"
 )
 
 const (

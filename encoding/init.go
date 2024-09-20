@@ -47,21 +47,6 @@ func ReInitJwtEncodingKeys() {
 		doLoadJwt(newJwtCfg, newKeys)
 		g.Log().Infof(ctx, "[Success] ReLoad Security Config")
 	}
-
-	rsaCfg.Lock()
-	defer rsaCfg.Unlock()
-	rsaKeys.Lock()
-	defer rsaKeys.Unlock()
-	newRsaCfg := &RsaConfig{}
-	doLoadRsaConfig(ctx, newRsaCfg)
-	rsaKeys = &RsaKeys{}
-	doLoadRsaKeys(rsaCfg, rsaKeys)
-	rsaCfgEqual := doRsaCfgCompare(newRsaCfg, rsaCfg)
-	if !rsaCfgEqual {
-		rsaCfg = newRsaCfg
-		newRsaKeys := &RsaKeys{}
-		doLoadRsaKeys(rsaCfg, newRsaKeys)
-	}
 }
 
 func ReInitRsaEncodingKeys() {

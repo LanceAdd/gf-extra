@@ -2,12 +2,10 @@ package auth
 
 import (
 	"context"
-	"errors"
 	"github.com/gogf/gf/v2/errors/gerror"
 	"github.com/gogf/gf/v2/frame/g"
 	"github.com/gogf/gf/v2/net/ghttp"
 	"github.com/gogf/gf/v2/os/gcache"
-	"github.com/gogf/gf/v2/util/gutil"
 	"strings"
 )
 
@@ -43,99 +41,61 @@ func doTokenRequired(r *ghttp.Request) error {
 		return gerror.NewCode(UrlPrefixError)
 	}
 	cacheMode := GetCacheMode()
-	currentUser := doVerifyToken(r.GetCtx(), token, cacheMode)
-	if currentUser == nil {
+	currentUserId := doVerifyToken(r.GetCtx(), token, cacheMode)
+	if currentUserId == 0 {
 		return gerror.NewCode(IllegalTokensError)
 	}
-	r.SetCtxVar(CtxUserId, currentUser.UserId)
+	r.SetCtxVar(CtxUserId, currentUserId)
 	return nil
 }
 
-func doVerifyToken(ctx context.Context, token string, mode string) *CurrentUser {
+func doVerifyToken(ctx context.Context, token string, mode string) int64 {
 	if strings.TrimSpace(token) == "" {
-		return nil
+		return 0
 	}
 	var (
-		user *CurrentUser
-		err  error
+		userId int64
+		err    error
 	)
 	switch mode {
 	case CacheModeRedis:
-		user, err = doExistsTokenFromRedis(ctx, token)
+		userId, err = doExistsTokenFromRedis(ctx, token)
 	case CacheModeMemory:
-		user, err = doExistsTokenFromMemory(ctx, token)
-	case CacheModeNone:
-		user, err = doVerifyTokenByUnSignVerify(ctx, token)
+		userId, err = doExistsTokenFromMemory(ctx, token)
 	default:
 		g.Log().Errorf(ctx, "illegal cache mode: %s", mode)
-		return nil
+		return 0
 	}
 	if err != nil {
 		g.Log().Error(ctx, err)
-		return nil
+		return 0
 	}
-	if user != nil {
-		return user
+	if userId > 0 {
+		return userId
 	}
-	return nil
+	return 0
 }
 
-func doExistsTokenFromRedis(ctx context.Context, token string) (*CurrentUser, error) {
+func doExistsTokenFromRedis(ctx context.Context, token string) (int64, error) {
 	key := CachePrefixUserToken + ":" + token
-	tmp, err := redisOps().Get(ctx, key)
+	value, err := redisOps().Get(ctx, key)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	if tmp.IsNil() {
-		return nil, nil
+	if value.IsNil() {
+		return 0, nil
 	}
-	content := &SimpleTokenContent{}
-	err = tmp.Scan(content)
-	if err != nil {
-		return nil, err
-	}
-	if gutil.IsEmpty(content.UserId) {
-		return nil, nil
-	}
-	if !content.IsValidate() {
-		return nil, nil
-	}
-	return &CurrentUser{UserId: content.UserId}, nil
+	return value.Int64(), nil
 }
 
-func doExistsTokenFromMemory(ctx context.Context, token string) (*CurrentUser, error) {
+func doExistsTokenFromMemory(ctx context.Context, token string) (int64, error) {
 	key := CachePrefixUserToken + ":" + token
-	tmp, err := gcache.Get(ctx, key)
+	value, err := gcache.Get(ctx, key)
 	if err != nil {
-		return nil, err
+		return 0, err
 	}
-	content := &SimpleTokenContent{}
-	err = tmp.Scan(content)
-	if err != nil {
-		return nil, err
+	if value.IsNil() {
+		return 0, nil
 	}
-	if gutil.IsEmpty(content.UserId) {
-		return nil, nil
-	}
-	if !content.IsValidate() {
-		return nil, nil
-	}
-	return &CurrentUser{UserId: content.UserId}, nil
-}
-func doVerifyTokenByUnSignVerify(ctx context.Context, token string) (*CurrentUser, error) {
-	if unSignToken == nil {
-		g.Log().Error(ctx, "func unSignToken do not init")
-		return nil, errors.New("func signToken do not init")
-	}
-	content, err := unSignToken(ctx, token)
-	if err != nil {
-		return nil, err
-	}
-	if gutil.IsEmpty(content.UserId) {
-		return nil, nil
-	}
-	if !content.IsValidate() {
-		return nil, nil
-	}
-	return &CurrentUser{UserId: content.UserId}, nil
+	return value.Int64(), nil
 }

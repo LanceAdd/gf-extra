@@ -17,8 +17,6 @@ var (
 	ruleMap            *sync.Map
 	getGroupCodes      func(ctx context.Context, userId int64) ([]string, error)
 	getPermissionCodes func(ctx context.Context, userId int64) ([]string, error)
-	signToken          func(ctx context.Context, s *SimpleTokenContent) (string, error)
-	unSignToken        func(ctx context.Context, content string) (*SimpleTokenContent, error)
 	getPlatform        func(ctx context.Context) string
 )
 
@@ -37,14 +35,6 @@ func SetGetGroupCodesFunc(f func(ctx context.Context, userId int64) ([]string, e
 
 func SetGetPermissionCodes(f func(ctx context.Context, userId int64) ([]string, error)) {
 	getPermissionCodes = f
-}
-
-func SetSignTokenFunc(f func(ctx context.Context, s *SimpleTokenContent) (string, error)) {
-	signToken = f
-}
-
-func SetUnSignTokenFunc(f func(ctx context.Context, content string) (*SimpleTokenContent, error)) {
-	unSignToken = f
 }
 
 func SetGetPlatformFunc(f func(ctx context.Context) string) {
